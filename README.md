@@ -42,37 +42,21 @@ Use the menu to add one or more Google Groups and Calendars, or to manage the St
 
 ```
 @{
-    "Groups":  @(
-                   {
-                       "Email":  "group1@domain.tld",
-                       "Label":  "Group 1",
-                       "CalendarIds": [
-                                          "c_789lmnop...@group.calendar.google.com"
-                       ]
-                   },
-                   {
-                       "Email":  "group2@domain.tld",
-                       "Label":  "Group 2",
-                       "CalendarIds":  [
-                                           "c_123xyz...@group.calendar.google.com",
-                                           "c_456jkl...@resource.calendar.google.com"
-                                       ]
-                   }
-               )
-    "Calendars":  @(
-                      {
-                          "Id":  "c_123xyz...@group.calendar.google.com",
-                          "Label":  "Events"
-                      },
-                      {
-                          "Id":  "c_456jkl...@resource.calendar.google.com",
-                          "Label":  "Conference Room"
-                      },
-                      {
-                          "Id":  "c_789lmnop...@group.calendar.google.com",
-                          "Label":  "Party Planning Committee"
-                      }
-                  )
+    Calendars = @(
+        @{
+            Label = 'Example Calendar'
+            Id = 'c_123xyz...@group.calendar.google.com'
+        }
+    )
+    Groups = @(
+        @{
+            Email = 'group1@domain.tld'
+            Label = 'Example group'
+            CalendarIds = @(
+                'c_123xyz...@group.calendar.google.com'
+            )
+        }
+    )
 }
 ```
 
