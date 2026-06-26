@@ -40,7 +40,7 @@ Run the TUI in PowerShell
 
 Use the menu to add one or more Google Groups and Calendars, or to manage the State. The config is saved as `config.psd1` in the same directory as the script.
 
-```json
+```
 @{
     "Groups":  @(
                    {
@@ -78,44 +78,26 @@ Use the menu to add one or more Google Groups and Calendars, or to manage the St
 
 Each group maps to its own list of calendars via `CalendarIds`. A calendar can be linked to multiple groups. The top-level `Calendars` array is the shared pool that groups reference from by ID.
 
-DeployDays are also set in the `config.json`, this refers to how many days should be deferred for deployment. More about DeployDays and State below, in *How It Works*.
-
 ---
 
 ## Usage
 
-### Run manually
+### Run manual "deployment"
 
 ```powershell
-.\Deploy-GroupCalendars.ps1
+.\Run-Deployment.ps1
 ```
 
-### Open the config menu
+### Manage Calendars & Groups
 
 ```powershell
-.\Deploy-GroupCalendars.ps1 -Config
+.\Manage-Subscriptions.ps1
 ```
-
-### Use a custom config path
-
-```powershell
-.\Deploy-GroupCalendars.ps1 -ConfigPath "C:\Scripts\my-config.json"
-```
-
-### Parameters
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `-Config` | Switch | — | Launches the interactive config menu |
-| `-ConfigPath` | String | `.\config.json` | Path to the config file |
-| `-AppTitle` | String | `Deploy-CalendarSubscriptions` | Used as the Windows Event Log source name and in the Config Menu |
-| `-StateDir` | String | `.\state` | Directory to store state files per group. These files are used to filter out users and calendars recently deployed |
-
 ---
 
 ## How It Works
 
-For each Group defined in `config.json`, the script:
+For each Group defined in `Config.psd1`, the script:
 
 1. Resolves which calendars are linked to that group via `CalendarIds`
 2. Calls GAM7 to fetch all user members of the group, recursively resolving any nested child groups (`recursive types user`)
@@ -124,12 +106,11 @@ For each Group defined in `config.json`, the script:
 5. For each linked calendar, calls GAM7 to add the calendar to each user's account with `selected true` (visible by default)
 
 ## State
-State allows admin to configure a set number of days to defer deployment for all users. This can help cut down on GAM calls, especially with large groups with relatively stable membership. The deployment process will save a list (a state file) of users and calendar relationships for each group, along with a timestamp. When it pulls down the latest group members into a temp CSV, it will compare that membership against that state file. Deployment will run for any new members or members outside of the `DeployDays` threshold. Other members will be skipped. If needed, the state file can be deleted and rebuilt on the next deployment run. If GAM hits a snag, the state file will save where it had left off, and will catch up the deployment on the next scheduled run.
+The deployment process will save a list (a state file) of users and calendar relationships for each group, along with a timestamp. When it pulls down the latest group members into a temp CSV, it will compare that membership against the state file. Deployment will run for any new members of the group. Other members will be skipped. If needed, the state file can be deleted and rebuilt on the next deployment run. If GAM hits a snag, the state file will save where it had left off, and will catch up the deployment on the next scheduled run.
 
 > **FYI**
 > 1. If a user is a member of multiple nested child groups within the same parent, they may appear more than once in the member list. This does not cause problems but will be reflected in the logged user count.
 > 2. Groups with no linked calendars are skipped, logging a warning.
-> 3. If a user is already subscribed to a calendar, GAM7's `add calendar` is idempotent — it will not create duplicates or throw an error.
 
 ---
 
@@ -137,14 +118,14 @@ State allows admin to configure a set number of days to defer deployment for all
 
 All activity is written to the **Windows Event Log** under `Application` with the source `Deploy-GroupCalendars` (or whatever `-AppTitle` is set to).
 
-| Event | Level |
-|-------|-------|
-| Deploy started for a group | Information |
-| User count found | Information |
-| Calendar being processed | Information |
-| Deploy complete for a group | Information |
-| No members found / group missing | Error |
-| Any unhandled exception | Error |
+| Event                            | Level       |
+| -------------------------------- | ----------- |
+| Deploy started for a group       | Information |
+| User count found                 | Information |
+| Calendar being processed         | Information |
+| Deploy complete for a group      | Information |
+| No members found / group missing | Error       |
+| Any unhandled exception          | Error       |
 
 To view logs:
 
@@ -168,7 +149,7 @@ To run on a schedule, create a Task Scheduler job that calls:
 
 ```
 Program: powershell.exe
-Arguments: -NonInteractive -ExecutionPolicy Bypass -Command "& 'C:\Scripts\Deploy-CalendarSubscriptions\Deploy-CalendarSubscriptions.ps1'"
+Arguments: -NonInteractive -ExecutionPolicy Bypass -Command "& 'C:\Scripts\Deploy-CalendarSubscriptions\Run-Deployment.ps1'"
 ```
 _Make sure this points to the script on your own system!_
 
@@ -178,15 +159,3 @@ Ensure the task runs under an account that has:
 - Permission to write to the Windows Event Log (or the source pre-registered by an admin)
 
 ---
-
-## File Structure
-
-```
-Deploy-CalendarSubscriptions/
-├── Deploy-CalendarSubscriptions.ps1
-├── config.json
-├── README.md
-└── state/
-    ├── state-group1-domain-tld.json
-    └── state-group2-domain-tld.json
-```
