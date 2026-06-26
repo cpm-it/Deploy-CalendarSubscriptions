@@ -366,23 +366,20 @@ function Show-StateMenu {
 }
 
 # --- MAIN LOOP ---
-while ($true) {
+:MainLoop while ($true) {
   $cfg = Read-Config -ConfigPath $ConfigPath
   Write-Header "Main Menu"
   Write-Host "  Calendars Defined:  $(@($cfg.Calendars).Count)"
   Write-Host "  Groups Defined:     $(@($cfg.Groups).Count)"
   Write-Host "  Database Target:    $StateDir" -ForegroundColor DarkGray
   Write-Host ""
-  Write-Host "  [1]  Manage Calendars"
-  Write-Host "  [2]  Manage Groups"
-  Write-Host "  [3]  Manage State Database"
-  Write-Host "  [Q]  Quit"
+  Write-Host "  [1]  Manage Calendars`n  [2]  Manage Groups`n  [3]  Manage State Database`n  [Q]  Quit"
 
   $choice = Read-Host "`nSelection"
   switch ($choice.ToUpper()) {
     "1" { Show-CalendarMenu }
     "2" { Show-GroupMenu }
     "3" { Show-StateMenu }
-    "Q" { Clear-Host; Start-Sleep -Seconds 2; break }
+    "Q" { Clear-Host; Write-Host "Exiting..."; Start-Sleep -Seconds 2; break MainLoop }
   }
 }
