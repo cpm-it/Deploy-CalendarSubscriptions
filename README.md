@@ -1,6 +1,6 @@
 # Sync-CalendarSubscriptions
 
-A PowerShell script that uses [GAM7](https://github.com/GAM-team/GAM) to automatically subscribe Google Group members to one or more Google Calendars. Group membership is resolved recursively, so users in nested child groups are included. Each group can be mapped to its own set of calendars.
+A PowerShell bundle that uses [GAM7](https://github.com/GAM-team/GAM) to automatically subscribe Google Group members to one or more Google Calendars. Group membership is resolved recursively, so users in nested child groups are included. Each group can be mapped to its own set of calendars.
 
 ---
 
@@ -12,6 +12,17 @@ A PowerShell script that uses [GAM7](https://github.com/GAM-team/GAM) to automat
 
 ---
 
+## Structure
+```
+Deploy-CalendarSubscriptions/
+├── Modules/
+│   └── CalendarEngine.psm1     # Core logic
+├── State/                      # Data
+│   └── state-<GroupEmail>.json
+├── Config.psd1                 # Maps groups and calendars
+├── Manage-Subscriptions.ps1    # TUI for managing data
+└── Run-Deployment.ps1          # GAM wrapper, runs headless
+```
 ## Setup
 
 ### 1. Configure GAM7
@@ -20,20 +31,18 @@ Ensure GAM7 is installed and authorized for your Google Workspace domain before 
 
 See the [GAM7 installation guide](https://github.com/GAM-team/GAM/wiki/How-to-Install-GAM7) for details.
 
-### 2. Create a config.json
+### 2. Add Calendars and Groups
 
-Run the script with the `-Config` flag to launch the interactive configuration menu:
-
+Run the TUI in PowerShell
 ```powershell
-.\Deploy-GroupCalendars.ps1 -Config
+.\Manage-Subscriptions.ps1
 ```
 
-Use the menu to add one or more Google Groups and Calendars, or to manage the State. The config is saved as `config.json` in the same directory as the script.
+Use the menu to add one or more Google Groups and Calendars, or to manage the State. The config is saved as `config.psd1` in the same directory as the script.
 
 ```json
-{
-    "DeployDays": "7",
-    "Groups":  [
+@{
+    "Groups":  @(
                    {
                        "Email":  "group1@domain.tld",
                        "Label":  "Group 1",
@@ -49,8 +58,8 @@ Use the menu to add one or more Google Groups and Calendars, or to manage the St
                                            "c_456jkl...@resource.calendar.google.com"
                                        ]
                    }
-               ],
-    "Calendars":  [
+               )
+    "Calendars":  @(
                       {
                           "Id":  "c_123xyz...@group.calendar.google.com",
                           "Label":  "Events"
@@ -63,7 +72,7 @@ Use the menu to add one or more Google Groups and Calendars, or to manage the St
                           "Id":  "c_789lmnop...@group.calendar.google.com",
                           "Label":  "Party Planning Committee"
                       }
-                  ]
+                  )
 }
 ```
 
