@@ -358,7 +358,7 @@ function Show-StateMenu {
           $stateFiles | Remove-Item -Force
           Write-Host "State system synchronized to zero." -ForegroundColor Green
           Start-Sleep -Seconds 2
-        }
+        } else { Write-Host "Operation cancelled" -ForegroundColor Red Start-Sleep -Seconds 2 }
       }
       "X" { return }
     }
